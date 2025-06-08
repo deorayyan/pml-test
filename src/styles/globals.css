@@ -1,8 +1,75 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: hsl(0, 0%, 99%);
+  --radius: 0.438rem;
+}
+
+@theme {
+  --color-background: hsl(0, 0%, 99%);
+  --color-foreground: hsl(253, 13%, 40%);
+  --color-card: hsl(0, 0%, 100%);
+  --color-card-foreground: hsl(0, 0%, 3.9%);
+  --color-popover: hsl(0, 0% ,100%);
+  --color-popover-foreground: hsl(0, 0%, 3.9%);
+  --color-primary: hsl(159, 40%, 46%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(11, 100%, 68%);
+  --color-secondary-foreground: hsl(0, 0%, 100%);
+  --color-muted: hsl(0, 0%, 96.1%);
+  --color-muted-foreground: hsl(240, 8%, 55%);
+  --color-accent: hsl(159, 38%, 32%);
+  --color-accent-foreground: hsl(0, 0%, 100%);
+  --color-destructive: hsl(0, 84.2%, 60.2%);
+  --color-destructive-foreground: hsl(0, 0%, 98%);
+  --color-border: hsl(0, 0%, 80%);
+  --color-input: hsl(0, 0%, 80%);
+  --color-ring: hsl(0, 0%, 3.9%);
+  --color-success: hsl(175, 45%, 43%);
+  --color-success-foreground: hsl(0, 0%, 100%);
+  --color-danger: hsl(360, 100%, 68%);
+  --color-danger-foreground: hsl(0, 0%, 100%);
+  --color-warning: hsl(36, 100%, 65%);
+  --color-warning-foreground: hsl(0, 0%, 100%);
+  --color-info: hsl(172, 50%, 58%);
+  --color-info-foreground: hsl(0, 0%, 100%);
+  --color-dark: hsl(188, 56%, 18%);
+  --color-dark-foreground: hsl(0, 0%, 100%);
+  --color-light: hsl(60, 31%, 95%);
+  --color-light-foreground: hsl(188, 56%, 18%);
+  --color-sidebar-background: hsl(0, 0%, 100%);
+  --color-sidebar-foreground: hsl(240, 5.3%, 26.1%);
+  --color-sidebar-primary: hsl(240, 5.9%, 10%);
+  --color-sidebar-primary-foreground: hsl(,0 0%, 98%);
+  --color-sidebar-accent: hsl(240, 4.8%, 95.9%);
+  --color-sidebar-accent-foreground: hsl(240, 5.9%, 10%);
+  --color-sidebar-border: hsl(220, 13%, 91%);
+  --color-sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+  --color-grey: hsl(252, 24%, 96%);
+  --color-grey-foreground: hsl(253, 13%, 40%);
+  --color-soft: hsl(251, 7%, 45%);
+  --color-disabled: hsl(0, 0%, 96.2%);
+  --color-chart-1: hsl(12, 76%, 61%);
+  --color-chart-2: hsl(173, 58%, 39%);
+  --color-chart-3: hsl(197, 37%, 24%);
+  --color-chart-4: hsl(43, 74%, 66%);
+  --color-chart-5: hsl(27, 87%, 67%);
+  --text-display-1: 5.25rem;
+  --text-display-1--line-height: 7.875rem;
+  --text-display-2: 4.813rem;
+  --text-display-2--line-height: 5.906rem;
+  --text-display-3: 3.938rem;
+  --text-display-3--line-height: 7.219rem;
+  --text-display-4: 3.063rem;
+  --text-display-4--line-height: 4.594rem;
+  --text-sm: 0.75rem;
+  --text-sm--line-height: 1.125rem;
+  --text-base: 0.875rem;
+  --text-base--line-height: 1.313rem;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.5rem;
+  --shadow-panel: 0 4px 24px 0 rgb(0 0 0 / 0.12);
+  --shadow-floating: 0 0 15px 0 rgb(0 0 0 / 0.05);
 }
 
 @theme inline {
@@ -12,15 +79,58 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  @apply font-sans text-base;
+}
+
+h2 {
+  font-size: 1.5rem;
+  line-height: 2.25rem;
+}
+
+/* Ripple button */
+.waves-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  animation: ripple-effect 0.7s ease;
+}
+
+@keyframes ripple-effect {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    width: 200%;
+    padding-bottom: 200%;
+    opacity: 0;
+  }
+}
+
+.loader {
+  color: hsl(var(--primary));
+  font-size: 10px;
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  position: relative;
+  text-indent: -9999em;
+  animation: mulShdSpin 1.3s infinite linear;
+  transform: translateZ(0);
 }
