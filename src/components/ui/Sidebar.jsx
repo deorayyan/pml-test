@@ -13,7 +13,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui/Tooltip";
 import { useIsMobile } from "@/hooks/useMobile";
 
 export const SIDEBAR_COOKIE_NAME = "sidebar:state";
