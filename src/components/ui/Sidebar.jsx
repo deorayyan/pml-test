@@ -4,11 +4,11 @@ import { cva } from "class-variance-authority";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/utils/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Separator } from "@/components/ui/Separator";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/Sheet";
+import { Skeleton } from "@/components/ui/Skeleton";
 import {
   Tooltip,
   TooltipContent,

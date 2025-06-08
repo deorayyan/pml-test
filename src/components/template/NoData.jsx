@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Button } from "../ui/button";
+import { Button } from "../ui/Button";
 import Image from "next/image";
 
-export const NoData = ({ home }: { home?: boolean }) => {
+export const NoData = ({ home }) => {
   return (
     <div className="flex items-center justify-center">
       <div className="text-center">
