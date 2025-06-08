@@ -3,75 +3,78 @@ import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { ChevronLeft, Save, SendHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-// import { useDialog } from "@/app/context/DialogContext";
+import React from "react";
 import { Separator } from "@/components/ui/Separator";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch, useSelector } from "react-redux";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/Form";
-import { Label } from "@/components/ui/Label";
-import { Switch } from "@/components/ui/Switch";
 import Combobox from "@/components/Combobox";
-import { Textarea } from "@/components/ui/Textarea";
-import { addTracker, fetchAllTrackers, updateTracker } from "@/redux/slices/masterTrackerSlice";
+import { addRequest, updateRequest } from "@/redux/slices/requestSlice";
 import { useToast } from "@/hooks/useToast";
+import DatePicker from "@/components/Datepicker";
+import { formatISO } from "date-fns";
 
 const formSchema = z.object({
-  actionType: z.string().min(1, {message: "Please select Action Type"}),
-  code: z.string().min(1, {message: "Code is required"}),
-  description: z.string().min(1, {message: "Description is required"}),
-  isParallel: z.boolean(),
-  isPublic: z.boolean(),
-  isUsingNotification: z.boolean(),
-  mandays: z.number({ invalid_type_error: "Mandays is required" }),
-  moduleFlow: z.string().min(1, {message: "Please select Module Flow"}),
-  order: z.number().min(0, {message: "Order is required"}),
-  parentCode: z.string(),
+  partnerId: z.string().min(1, {message: "Please select Partner"}),
+  projectCode: z.string().min(1, {message: "Project Code is required"}),
+  totalFee: z.number(),
+  lastStatus: z.string(),
+  receivingStatus: z.string(),
+  leadTime: z.number(),
+  receivedDate: z.date(),
+  analysisWipDate: z.date(),
+  analysisCompletedDate: z.date()
 });
 
-const MasterTrackerForm = ({
+const RequestForm = ({
   initialValue,
   head,
   readOnly,
 }) => {
+  console.log("initialValue", initialValue);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: initialValue,
     mode: "onSubmit"
   });
 
-  const { loading, submitting, list } = useSelector((state) => state.tracker);
+  const { loading, submitting } = useSelector((state) => state.request);
 
   const dispatch = useDispatch();
   const router = useRouter();
   const { toast } = useToast();
 
-  useEffect(() => {
-    dispatch(fetchAllTrackers());
-  }, []);
-
   const onSubmit = async (values) => {
+    console.log("values", values);
     try {
       if (initialValue?.id) {
-        await dispatch(updateTracker({
+        await dispatch(updateRequest({
           id: initialValue?.id,
-          ...values
+          ...values,
+          analysisCompletedDate: formatISO(values.analysisCompletedDate),
+          analysisWipDate: formatISO(values.analysisWipDate),
+          receivedDate: formatISO(values.receivedDate),
         }));
         toast({
           title: "Saved",
           description: "Data has been updated."
         })
       } else {
-        await dispatch(addTracker(values));
+        await dispatch(addRequest({
+          ...values,
+          analysisCompletedDate: formatISO(values.analysisCompletedDate),
+          analysisWipDate: formatISO(values.analysisWipDate),
+          receivedDate: formatISO(values.receivedDate),
+        }));
         toast({
           title: "Submitted",
           description: "Data has been submitted."
         })
       }
 
-      router.push("/master/tracker");
+      router.push("/request/babe");
     } catch (err) {
       console.log("err", err);
       toast({
@@ -97,7 +100,7 @@ const MasterTrackerForm = ({
               <Button
                 variant="outline"
                 className="pr-5 pl-3"
-                onClick={() => router.push("/master/tracker")}
+                onClick={() => router.push("/request/babe")}
                 type="button"
               >
                 <ChevronLeft />
@@ -130,32 +133,20 @@ const MasterTrackerForm = ({
               <div className="grid grid-cols-2 gap-3 items-center content-center">
                 <FormField
                   control={form.control}
-                  name="actionType"
+                  name="partnerId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Action Type</FormLabel>
+                      <FormLabel>Partner</FormLabel>
                       <FormControl>
                         <Combobox
                           onValueChange={(val) => {
-                            form.setValue("actionType", val)
+                            form.setValue("partnerId", val)
                           }}
                           defaultValue={field.value}
                           options={[
                             {
-                              label: "None",
-                              value: "none"
-                            },
-                            {
-                              label: "Text",
-                              value: "text"
-                            },
-                            {
-                              label: "File",
-                              value: "file"
-                            },
-                            {
-                              label: "Date",
-                              value: "date"
+                              label: "Partner A",
+                              value: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
                             }
                           ]}
                         />
@@ -166,13 +157,49 @@ const MasterTrackerForm = ({
                 />
                 <FormField
                   control={form.control}
-                  name="code"
+                  name="projectCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Code</FormLabel>
+                      <FormLabel>Project Code</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Code"
+                          placeholder="Project Code"
+                          disabled={loading}
+                          bounceTime={0}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="receivingStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Receiving Status</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Receiving Status"
+                          disabled={loading}
+                          bounceTime={0}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Status</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Last Status"
                           disabled={loading}
                           bounceTime={0}
                           {...field}
@@ -183,93 +210,84 @@ const MasterTrackerForm = ({
                   )}
                 />
               </div>
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Description"
-                        disabled={loading}
-                        bounceTime={0}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex gap-6">
+              <div className="grid grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
-                  name="isParallel"
+                  name="receivedDate"
                   render={({ field }) => (
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="isParallel"
-                        checked={field.value ?? false}
-                        onCheckedChange={(checked) => {
-                          form.setValue("isParallel", checked);
-                        }}
-                        disabled={loading}
-                      />
-                      <Label htmlFor="isParallel">Parallel</Label>
-                    </div>
+                    <FormItem>
+                      <FormLabel>Request Date</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          onDateChange={(val) => {
+                            form.setValue("receivedDate", val);
+                          }}
+                          value={field.value}
+                          placeholder="Select Date"
+                          disabled={submitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="isPublic"
+                  name="analysisWipDate"
                   render={({ field }) => (
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="isPublic"
-                        checked={field.value ?? false}
-                        onCheckedChange={(checked) => {
-                          form.setValue("isPublic", checked);
-                        }}
-                        disabled={loading}
-                      />
-                      <Label htmlFor="isPublic">Public</Label>
-                    </div>
+                    <FormItem>
+                      <FormLabel>Analysis Wip Date</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          value={field.value}
+                          onDateChange={(val) => {
+                            form.setValue("analysisWipDate", val);
+                          }}
+                          placeholder="Select Date"
+                          disabled={submitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="isUsingNotification"
+                  name="analysisCompletedDate"
                   render={({ field }) => (
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="isUsingNotification"
-                        checked={field.value ?? false}
-                        onCheckedChange={(checked) => {
-                          form.setValue("isUsingNotification", checked);
-                        }}
-                        disabled={loading}
-                      />
-                      <Label htmlFor="isUsingNotification">Notification</Label>
-                    </div>
+                    <FormItem>
+                      <FormLabel>Analysis Completed Date</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          value={field.value}
+                          onDateChange={(val) => {
+                            form.setValue("analysisCompletedDate", val);
+                          }}
+                          placeholder="Select Date"
+                          disabled={submitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="mandays"
+                  name="leadTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Mandays</FormLabel>
+                      <FormLabel>Lead Time</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Mandays"
+                          placeholder="Lead Time"
                           disabled={loading}
                           bounceTime={0}
                           {...field}
                           onChange={(e) => {
-                            form.setValue("mandays", e.target.rawValue)
+                            form.setValue("leadTime", e.target.rawValue)
                           }}
                         />
                       </FormControl>
@@ -279,70 +297,20 @@ const MasterTrackerForm = ({
                 />
                 <FormField
                   control={form.control}
-                  name="moduleFlow"
+                  name="totalFee"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Module Flow</FormLabel>
-                      <FormControl>
-                        <Combobox
-                          onValueChange={(val) => {
-                            form.setValue("moduleFlow", val)
-                          }}
-                          defaultValue={field.value}
-                          options={[
-                            {
-                              label: "CA",
-                              value: "CA"
-                            },
-                          ]}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="md:max-w-24">
-                <FormField
-                  control={form.control}
-                  name="order"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Order</FormLabel>
+                      <FormLabel>Total Fee</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Order"
+                          placeholder="Total Fee"
                           disabled={loading}
                           bounceTime={0}
                           {...field}
                           onChange={(e) => {
-                            form.setValue("order", e.target.rawValue)
+                            form.setValue("totalFee", e.target.rawValue)
                           }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div>
-                <FormField
-                  control={form.control}
-                  name="parentCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Parent</FormLabel>
-                      <FormControl>
-                        <Combobox
-                          onValueChange={(val) => {
-                            form.setValue("parentCode", val)
-                          }}
-                          defaultValue={field.value}
-                          options={list.map((item) => ({
-                            label: item.code,
-                            value: item.code,
-                          }))}
                         />
                       </FormControl>
                       <FormMessage />
@@ -358,4 +326,4 @@ const MasterTrackerForm = ({
   );
 };
 
-export default MasterTrackerForm;
+export default RequestForm;
