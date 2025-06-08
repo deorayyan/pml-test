@@ -24,8 +24,8 @@ import { DataTablePagination } from "@/components/DataTablePagination";
 import { DataTableToolbar } from "./DataTableToolbar";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
-import TableCellNoWrap from "./TableCellNowrap";
 import { useIsMobile } from "@/hooks/useMobile";
+import TableCellNoWrap from "./TableCellNoWrap";
 
 export function DataTable({
   columns,

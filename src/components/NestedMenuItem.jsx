@@ -7,16 +7,14 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/Sidebar";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@/components/ui/Collapsible";
 import React from "react";
-import Icon from "@/components/icon";
-
-
+import Icon from "@/components/Icon";
 
 const trimPath = (pathname) => {
   const segments = pathname?.split("/").filter(Boolean); // Split and remove empty parts

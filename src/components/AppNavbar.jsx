@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { UserNav } from "./UserNav";
 import { useSidebar } from "./ui/Sidebar";
-import { Button } from "./ui/button";
+import { Button } from "./ui/Button";
 import { Menu } from "lucide-react";
 
 export default function AppNavbar() {
