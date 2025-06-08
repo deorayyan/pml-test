@@ -37,8 +37,8 @@ const Login = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "fe.it.pml",
-      password: "Password123?",
+      username: "",
+      password: "",
       rememberMe: true,
     },
   });
