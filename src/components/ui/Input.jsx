@@ -21,7 +21,7 @@ const Input = React.memo(
         value = "",
         numeral = true,
         onChange,
-        bounceTime = 300,
+        bounceTime = 0,
         error,
         ...props
       },

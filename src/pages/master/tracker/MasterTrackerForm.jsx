@@ -3,8 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { ChevronLeft, Save, SendHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-// import { useDialog } from "@/app/context/DialogContext";
+import React, { useEffect } from "react";
 import { Separator } from "@/components/ui/Separator";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
@@ -15,7 +14,7 @@ import { Label } from "@/components/ui/Label";
 import { Switch } from "@/components/ui/Switch";
 import Combobox from "@/components/Combobox";
 import { Textarea } from "@/components/ui/Textarea";
-import { addTracker, fetchAllTrackers, updateTracker } from "@/redux/slices/masterTrackerSlice";
+import { addMasterTracker, fetchAllMasterTrackers, updateMasterTracker } from "@/redux/slices/masterTrackerSlice";
 import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
@@ -31,7 +30,7 @@ const formSchema = z.object({
   parentCode: z.string(),
 });
 
-const MasterTrackerForm = ({
+const MasterMasterTrackerForm = ({
   initialValue,
   head,
   readOnly,
@@ -49,13 +48,13 @@ const MasterTrackerForm = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    dispatch(fetchAllTrackers());
+    dispatch(fetchAllMasterTrackers());
   }, []);
 
   const onSubmit = async (values) => {
     try {
       if (initialValue?.id) {
-        await dispatch(updateTracker({
+        await dispatch(updateMasterTracker({
           id: initialValue?.id,
           ...values
         }));
@@ -64,7 +63,7 @@ const MasterTrackerForm = ({
           description: "Data has been updated."
         })
       } else {
-        await dispatch(addTracker(values));
+        await dispatch(addMasterTracker(values));
         toast({
           title: "Submitted",
           description: "Data has been submitted."
@@ -158,6 +157,7 @@ const MasterTrackerForm = ({
                               value: "date"
                             }
                           ]}
+                          disabled={loading || readOnly}
                         />
                       </FormControl>
                       <FormMessage />
@@ -173,7 +173,7 @@ const MasterTrackerForm = ({
                       <FormControl>
                         <Input
                           placeholder="Code"
-                          disabled={loading}
+                          disabled={loading || readOnly}
                           bounceTime={0}
                           {...field}
                         />
@@ -192,7 +192,7 @@ const MasterTrackerForm = ({
                     <FormControl>
                       <Textarea
                         placeholder="Description"
-                        disabled={loading}
+                        disabled={loading || readOnly}
                         bounceTime={0}
                         {...field}
                       />
@@ -213,7 +213,7 @@ const MasterTrackerForm = ({
                         onCheckedChange={(checked) => {
                           form.setValue("isParallel", checked);
                         }}
-                        disabled={loading}
+                        disabled={loading || readOnly}
                       />
                       <Label htmlFor="isParallel">Parallel</Label>
                     </div>
@@ -230,7 +230,7 @@ const MasterTrackerForm = ({
                         onCheckedChange={(checked) => {
                           form.setValue("isPublic", checked);
                         }}
-                        disabled={loading}
+                        disabled={loading || readOnly}
                       />
                       <Label htmlFor="isPublic">Public</Label>
                     </div>
@@ -247,7 +247,7 @@ const MasterTrackerForm = ({
                         onCheckedChange={(checked) => {
                           form.setValue("isUsingNotification", checked);
                         }}
-                        disabled={loading}
+                        disabled={loading || readOnly}
                       />
                       <Label htmlFor="isUsingNotification">Notification</Label>
                     </div>
@@ -265,7 +265,7 @@ const MasterTrackerForm = ({
                         <Input
                           type="number"
                           placeholder="Mandays"
-                          disabled={loading}
+                          disabled={loading || readOnly}
                           bounceTime={0}
                           {...field}
                           onChange={(e) => {
@@ -295,6 +295,7 @@ const MasterTrackerForm = ({
                               value: "CA"
                             },
                           ]}
+                          disabled={loading || readOnly}
                         />
                       </FormControl>
                       <FormMessage />
@@ -313,7 +314,7 @@ const MasterTrackerForm = ({
                         <Input
                           type="number"
                           placeholder="Order"
-                          disabled={loading}
+                          disabled={loading || readOnly}
                           bounceTime={0}
                           {...field}
                           onChange={(e) => {
@@ -343,6 +344,7 @@ const MasterTrackerForm = ({
                             label: item.code,
                             value: item.code,
                           }))}
+                          disabled={loading || readOnly}
                         />
                       </FormControl>
                       <FormMessage />
@@ -358,4 +360,4 @@ const MasterTrackerForm = ({
   );
 };
 
-export default MasterTrackerForm;
+export default MasterMasterTrackerForm;

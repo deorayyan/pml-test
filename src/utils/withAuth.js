@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import Loader from "@/components/Loader";
 
 const withAuth = (WrappedComponent) => {
   const Wrapper = (props) => {
@@ -7,22 +8,20 @@ const withAuth = (WrappedComponent) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      const token =
-        typeof window !== "undefined" &&
-        (localStorage.getItem("access_token") ||
-          sessionStorage.getItem("access_token"));
+      const authData =
+        typeof window !== "undefined" && localStorage.getItem("auth_data");
 
-      if (!token) {
+      if (!authData) {
         router.replace("/auth/login");
+      } else if (authData && router.pathname === "/auth/login") {
+        router.replace("/");
       } else {
         setLoading(false);
       }
     }, []);
 
     if (loading) {
-      return (
-        <div className="text-center mt-10">Checking authentication...</div>
-      );
+      return <Loader fullHeight loadingText="Checking authentication..." />;
     }
 
     return <WrappedComponent {...props} />;

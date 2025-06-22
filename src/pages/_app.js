@@ -1,13 +1,17 @@
+// src/pages/_app.js
 import "@/styles/globals.css";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import localFont from "next/font/local";
-import { Provider, useDispatch } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "@/redux/store";
 import AuthLayout from "@/components/layouts/auth";
 import MainLayout from "@/components/layouts/main";
 import { logout, setAuthData, setMenu } from "@/redux/slices/authSlice";
 import { TooltipProvider } from "@/components/ui/Tooltip";
+import Head from "next/head";
+import Loader from "@/components/Loader";
+import { refreshAccessToken, scheduleTokenRefresh } from "@/utils/refreshToken";
 
 const poppinsFont = localFont({
   src: [
@@ -69,13 +73,14 @@ const poppinsFont = localFont({
 function LoadingWrapper({ Component, pageProps }) {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.globalState);
 
   useEffect(() => {
     const handleStart = () => {
-      store.dispatch({ type: "auth/setLoading", payload: true });
+      store.dispatch({ type: "globalState/setLoading", payload: true });
     };
     const handleComplete = () => {
-      store.dispatch({ type: "auth/setLoading", payload: false });
+      store.dispatch({ type: "globalState/setLoading", payload: false });
     };
 
     router.events.on("routeChangeStart", handleStart);
@@ -91,28 +96,33 @@ function LoadingWrapper({ Component, pageProps }) {
 
   useEffect(() => {
     try {
-      const accessToken = sessionStorage.getItem("access_token");
-      const refreshToken = sessionStorage.getItem("refresh_token");
-      const userData = sessionStorage.getItem("user_data");
-      const menu = sessionStorage.getItem("menu");
+      const authData = localStorage.getItem("auth_data");
+      const menu = localStorage.getItem("menu");
+      const flatMenu = localStorage.getItem("flat_menu");
 
-      if (accessToken) {
+      if (authData) {
+        dispatch(setAuthData(JSON.parse(authData)));
+
         dispatch(
-          setAuthData({
-            token: accessToken,
-            refresh_token: refreshToken,
-            user_data: JSON.parse(userData),
+          setMenu({
+            nestedMenu: JSON.parse(menu),
+            flatMenu: JSON.parse(flatMenu),
           })
         );
 
-        // const menu = JSON.parse(storedMenu);
-        dispatch(setMenu(JSON.parse(menu)));
+        const now = Date.now();
+        scheduleTokenRefresh(
+          refreshAccessToken,
+          (JSON.parse(authData).token.expiresIn - now) / 1000 -
+            Number(process.env.NEXT_PUBLIC_TOKEN_REFRESH_EVERY ?? 30)
+        );
       } else {
-        dispatch(logout());
+        // dispatch(logout());
       }
     } catch {}
   }, [dispatch]);
 
+  const pageTitle = `PML - Kalbe Farma`;
   const Layout = Component.layout === "auth" ? AuthLayout : MainLayout;
   return (
     <>
@@ -121,9 +131,13 @@ function LoadingWrapper({ Component, pageProps }) {
           font-family: ${poppinsFont.style.fontFamily};
         }
       `}</style>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <Head>
+        <title>{pageTitle}</title>
+        <meta property="og:title" content={pageTitle} key="title" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <Layout>{loading ? <Loader /> : <Component {...pageProps} />}</Layout>
     </>
   );
 }

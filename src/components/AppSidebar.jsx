@@ -10,12 +10,14 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NestedMenuItem } from "./NestedMenuItem";
 import { useSelector } from "react-redux";
+import { trimPath } from "@/utils/menu";
 
 export function AppSidebar() {
-  const { menu } = useSelector((state) => state.auth);
+  const { menu, flatMenu } = useSelector((state) => state.auth);
+  const [activeItem, setActiveItem] = useState();
   // const moduleAccesses = menu?.moduleAccesses || [];
 
   // const allowedCodes = new Set(moduleAccesses.map((mod) => mod.moduleCode));
@@ -30,46 +32,50 @@ export function AppSidebar() {
     {}
   );
 
+  // useEffect(() => {
+  //   // Reset open indexes when user changes
+  //   setOpenIndexes({});
+
+  //   const initializeOpenIndexes = (items, parentId = 0) => {
+  //     [...items ?? []].forEach((item) => {
+  //       if (item.children?.length) {
+  //         let matchPaths = 0;
+  //         item?.moduleUrl?.split("/")?.forEach((pathName) => {
+  //           if (pathname?.split("/").includes(pathName)) {
+  //             matchPaths += 1;
+  //           }
+  //         });
+
+  //         if (matchPaths === item?.moduleUrl?.split("/")?.length) {
+  //           setOpenIndexes(() => ({
+  //             [`${parentId}`]: `${item.id}`,
+  //           }));
+  //         } else {
+  //           setOpenIndexes(() => ({
+  //             [`${parentId}`]: "",
+  //           }));
+  //         }
+
+  //         initializeOpenIndexes(item.children, item.id);
+  //       }
+  //     });
+  //   };
+
+  //   initializeOpenIndexes(menu.modules);
+  // }, [pathname, menu]);
+
   useEffect(() => {
-    // Reset open indexes when user changes
-    setOpenIndexes({});
-
-    const initializeOpenIndexes = (items, parentId = 0) => {
-      [...items ?? []].forEach((item) => {
-        if (item.children?.length) {
-          let matchPaths = 0;
-          item?.moduleUrl?.split("/")?.forEach((pathName) => {
-            if (pathname?.split("/").includes(pathName)) {
-              matchPaths += 1;
-            }
-          });
-
-          if (matchPaths === item?.moduleUrl?.split("/")?.length) {
-            setOpenIndexes(() => ({
-              [`${parentId}`]: `${item.id}`,
-            }));
-          } else {
-            setOpenIndexes(() => ({
-              [`${parentId}`]: "",
-            }));
-          }
-
-          initializeOpenIndexes(item.children, item.id);
-        }
-      });
-    };
-
-    initializeOpenIndexes(menu.modules);
-  }, [pathname, menu]);
+    setActiveItem(flatMenu?.modules?.find((item) => item.moduleUrl === trimPath(pathname)));
+  }, [pathname, menu, flatMenu])
 
   const handleOpenChange = (
-    parentId,
-    itemId,
+    parentModuleCode,
+    moduleCode,
     open
   ) => {
     setOpenIndexes((prev) => ({
       ...prev,
-      [`${parentId}`]: open ? `${itemId}` : "",
+      [`${parentModuleCode}`]: open ? `${moduleCode}` : "",
     }));
   };
 
@@ -100,12 +106,11 @@ export function AppSidebar() {
                   (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)
                 ).map((item) => (
                   <NestedMenuItem
+                    key={item.moduleCode}
                     item={item}
-                    parentId={0}
-                    parents={item?.parents}
-                    key={item?.moduleCode}
-                    openIndexes={openIndexes}
+                    activeItem={activeItem}
                     onOpenChange={handleOpenChange}
+                    openIndexes={openIndexes}
                   />
                 ))}
               </SidebarMenu>

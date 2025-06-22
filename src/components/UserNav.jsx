@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 
 export function UserNav() {
-  const { userData} = useSelector((state) => state.auth);
+  const { authData } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -26,7 +26,7 @@ export function UserNav() {
           className="relative w-10 h-10 overflow-visible rounded-full"
         >
           <Avatar>
-            <AvatarFallback>{getInitials(userData.user)}</AvatarFallback>
+            <AvatarFallback>{getInitials(authData.user)}</AvatarFallback>
           </Avatar>
           <div className="bg-success shrink-0 rounded-full h-3 w-3 absolute border-2 border-white bottom-0 right-0"></div>
         </Button>
@@ -34,9 +34,9 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{userData.user}</p>
+            <p className="text-sm font-medium leading-none">{authData.user}</p>
             <p className="text-xs leading-none text-muted-foreground text-ellipsis overflow-hidden whitespace-nowrap">
-              {userData.username}
+              {authData.username}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -44,9 +44,9 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
-            await dispatch(logout(userData));
+            await dispatch(logout(authData));
             dispatch(clearAuthData());
-            router.push("/auth/login");
+            router.replace("/auth/login");
           }}
         >
           Log out

@@ -30,9 +30,9 @@ const DatePicker = React.forwardRef(
       }
     }, [selected]);
 
-    React.useEffect(() => {
-      setSelected(value);
-    }, [value]);
+    // React.useEffect(() => {
+    //   setSelected(value);
+    // }, [value]);
 
     return (
       <Popover open={open} {...props} onOpenChange={setOpen}>

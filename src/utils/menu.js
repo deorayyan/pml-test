@@ -18,3 +18,17 @@ export const filterAccessibleMenu = (modules, userPermissions) => {
     })
     .filter(Boolean);
 };
+
+export const trimPath = (pathname) => {
+  const segments = pathname?.split("/").filter(Boolean); // Split and remove empty parts
+
+  if (
+    segments?.length > 0 &&
+    (segments[segments.length - 1] === "add" ||
+      segments[segments.length - 1] === "detail")
+  ) {
+    segments?.pop(); // Remove the last segment if it's "add"
+  }
+
+  return "/" + segments?.join("/"); // Reconstruct the path
+};

@@ -22,7 +22,6 @@ import {
 
 import { DataTablePagination } from "@/components/DataTablePagination";
 import { DataTableToolbar } from "./DataTableToolbar";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/useMobile";
 import TableCellNoWrap from "./TableCellNoWrap";
@@ -30,30 +29,25 @@ import TableCellNoWrap from "./TableCellNoWrap";
 export function DataTable({
   columns,
   data,
-  toolbar,
   hideToolbar,
-  hidePagination,
   noData,
   primaryColumns = [],
-  onPageSizeChange,
+  onSearchChange,
+  onPerPageChange,
   onPageChange,
   onSortChange,
-  hiddenPageSize = false,
-  showColumn = false,
   loading,
   busy,
-  withoutLimit = false,
+  search,
+  page,
+  perPage,
+  sort,
+  sortBy
 }) {
   const [rowSelection, setRowSelection] = React.useState({});
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [columnFilters, setColumnFilters] = React.useState(
-    []
-  );
+  const [columnFilters, setColumnFilters] = React.useState([]);
   const [sorting, setSorting] = React.useState([]);
-  const [isFirstRender, setIsFirstRender] = React.useState(true);
   const stableData = (data?.items ? data?.items : data);
 
   // mobile detection
@@ -88,16 +82,10 @@ export function DataTable({
       columnVisibility,
       rowSelection,
       columnFilters,
-      pagination: withoutLimit
-        ? {
-            pageIndex: 0,
-            pageSize: stableData.length,
-          }
-        : {
-            pageIndex:
-              Math.floor(dataWithPagination?.offset / dataWithPagination?.limit || 0),
-            pageSize: dataWithPagination?.limit || 10,
-          },
+      pagination: {
+        pageIndex: Number(page),
+        pageSize: Number(perPage),
+      },
     },
     getExpandedRowModel: getExpandedRowModel(),
     enableRowSelection: true,
@@ -114,33 +102,27 @@ export function DataTable({
     autoResetPageIndex: false,
     renderFallbackValue: false,
     manualSorting: true,
-    manualPagination: !!dataWithPagination?.items,
+    manualPagination: true,
     rowCount: dataWithPagination?.totalItems,
   });
 
   React.useEffect(() => {
+    console.log("sorting changed", sorting, [
+      {
+        id: sortBy,
+        desc: sort === "desc"
+      }
+    ]);
     if (sorting.length > 0) {
       if (onSortChange) {
         onSortChange(sorting);
-      } else {
-        const params = new URLSearchParams();
-        searchParams.forEach((val, key) => {
-          params.set(key, val);
-        });
-        sorting.forEach((sort) => {
-          params.set("sortBy", `${sort.id}`);
-          params.set("sort", `${sort.desc ? "desc" : "asc"}`);
-        });
-        router.replace(`${pathname}?${params.toString()}`);
       }
     }
   }, [sorting]);
 
   return (
     <div
-      className={`rounded-lg border border-border relative grid grid-cols-1 gap-4 w-full ${
-        !hidePagination ? "pb-4" : ""
-      } ${!hideToolbar ? "pt-4" : ""}`}
+      className={`rounded-lg border border-border relative grid grid-cols-1 gap-4 w-full pb-4 ${!hideToolbar ? "pt-4" : ""}`}
     >
       {busy && (
         <div className="absolute inset-0 bg-white/50 z-[1] flex items-center">
@@ -152,35 +134,23 @@ export function DataTable({
       {!hideToolbar && (
         <div className="px-2 md:px-4">
           <DataTableToolbar
-            table={table}
-            toolbar={toolbar}
-            onPageSizeChange={(value) => {
-              setIsFirstRender(false);
-              if (onPageSizeChange) {
-                onPageSizeChange(value);
-                // console.log("onPageSizeChange");
-              } else {
-                // console.log("no onPageSizeChange");
-                // const params = new URLSearchParams();
-                // searchParams.forEach((val, key) => {
-                //   if (key === "page") {
-                //     params.set(key, "1");
-                //   }
-                //   params.set(key, val);
-                // });
-
-                // params.set("pageSize", `${value}`);
-                // params.set("page", `1`);
-                // router.replace(`${pathname}?${params.toString()}`);
+            perPageDefaultValue={perPage}
+            searchDefaultValue={search}
+            onPerPageChange={(value) => {
+              if (onPerPageChange && value !== perPage) {
+                onPerPageChange(value);
               }
             }}
-            hiddenPageSize={hiddenPageSize}
-            showColumn={showColumn}
+            onSearchChange={(value) => {
+              if (onSearchChange) {
+                onSearchChange(value);
+              }
+            }}
           />
         </div>
       )}
       <div
-        className={`overflow-hidden border-border ${!hidePagination ? "border-b " : ""} ${
+        className={`overflow-hidden border-border border-b ${
           !hideToolbar ? "border-t" : ""
         }`}
       >
@@ -330,25 +300,14 @@ export function DataTable({
           </TableBody>
         </Table>
       </div>
-      {!hidePagination && (
-        <DataTablePagination
-          table={table}
-          onPageChange={(page) => {
-            if (onPageChange) {
-              onPageChange(page);
-            } else {
-              if (data?.items) {
-                const params = new URLSearchParams();
-                searchParams.forEach((val, key) => {
-                  params.set(key, val);
-                });
-                params.set("page", `${page}`);
-                router.replace(`${pathname}?${params.toString()}`);
-              }
-            }
-          }}
-        />
-      )}
+      <DataTablePagination
+        table={table}
+        onPageChange={(page) => {
+          if (onPageChange) {
+            onPageChange(page);
+          }
+        }}
+      />
     </div>
   );
 }

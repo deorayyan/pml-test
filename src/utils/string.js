@@ -18,3 +18,14 @@ export function getInitials(fullName) {
 
   return firstInitial + lastInitial;
 }
+
+export function camelToSnake(str) {
+  return str
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2") // tambahkan underscore sebelum huruf kapital
+    .replace(/([A-Z])([A-Z][a-z])/g, "$1_$2") // tangani huruf kapital beruntun
+    .toLowerCase();
+}
+
+export function snakeToCamel(str) {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}

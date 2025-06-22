@@ -3,16 +3,16 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import MasterTrackerTable from "./MasterTrackerTable";
+import RequestTable from "./RequestTable";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { fetchMasterTrackers } from "@/redux/slices/masterTrackerSlice";
+import { fetchRequests } from "@/redux/slices/requestSlice";
 import { useRouter } from "next/router";
 import { camelToSnake } from "@/utils/string";
 
-const pageTitle = "Master Tracker";
+const pageTitle = "Lab Analysis Request";
 
-export default function MasterTrackerPage({ query }) {
+export default function RequestPage({ query }) {
   const router = useRouter();
   const [search, setSearch] = useState(query?.search || "");
   const [page, setPage] = useState(query?.page || "0");
@@ -21,7 +21,7 @@ export default function MasterTrackerPage({ query }) {
   const [sort, setSort] = useState(query?.sort || "desc");
 
   const dispatch = useDispatch();
-  const { data, loading } = useSelector((state) => state.tracker);
+  const { data, loading } = useSelector((state) => state.request);
 
   const handleSearchChange = (q) => {
     setSearch(q);
@@ -64,7 +64,6 @@ export default function MasterTrackerPage({ query }) {
   };
 
   useEffect(() => {
-    console.log("should fetch");
     if (!router.isReady || loading) return;
     console.log("fetch", {
       search,
@@ -74,7 +73,7 @@ export default function MasterTrackerPage({ query }) {
       sortBy: camelToSnake(sortBy),
     });
     dispatch(
-      fetchMasterTrackers({
+      fetchRequests({
         search,
         page,
         perPage,
@@ -90,7 +89,7 @@ export default function MasterTrackerPage({ query }) {
         pageTitle={pageTitle}
         tools={
           <Button asChild>
-            <Link href="/master/tracker/add">
+            <Link href="/request/ca/add">
               <Plus /> Add New
             </Link>
           </Button>
@@ -100,7 +99,7 @@ export default function MasterTrackerPage({ query }) {
       <Card>
         <CardContent>
           <div className="h-full flex-1 flex-col space-y-8 py-6 md:flex">
-            <MasterTrackerTable
+            <RequestTable
               page={page}
               perPage={perPage}
               search={search}

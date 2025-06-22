@@ -1,67 +1,104 @@
+// src/redux/slices/authSlice.js
 import api from "@/services/api";
+import { refreshAccessToken, scheduleTokenRefresh } from "@/utils/refreshToken";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 export const login = createAsyncThunk(
   "auth/login",
   async ({ username, password }) => {
-    const res = await api.post("/api/v1/bio/authentication/auth/login", {
-      appCode: "ASSESSMENT",
-      moduleCode: "ALL",
-      domain: "",
-      user: username,
-      password: password,
-    });
-    return res.data.data;
+    try {
+      const res = await axios.post(
+        `/api/auth/login`,
+        {
+          username,
+          password,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      const originalExpiresIn = res.data.data.token.expiresIn;
+      const refreshEvery =
+        originalExpiresIn -
+        Number(process.env.NEXT_PUBLIC_TOKEN_REFRESH_EVERY ?? 60); // in seconds
+      console.log("scheduleTokenRefresh call from authSlice.js");
+      scheduleTokenRefresh(refreshAccessToken, refreshEvery);
+      return res.data.data;
+    } catch (err) {
+      console.log("ERRRR", err);
+      return err;
+    }
   }
 );
 
 export const fetchMenu = createAsyncThunk("auth/menu", async () => {
-  const res = await api.get(
-    "/api/v1/bio/authentication/auth/authorization?nested=true"
+  const { data: nestedMenu } = await api.get(
+    `${process.env.NEXT_PUBLIC_AUTH_PATH}/auth/authorization`,
+    {
+      params: {
+        nested: true,
+      },
+    }
   );
-  return res.data.data;
+  const { data: flatMenu } = await api.get(
+    `${process.env.NEXT_PUBLIC_AUTH_PATH}/auth/authorization`
+  );
+  return {
+    nestedMenu: nestedMenu.data,
+    flatMenu: flatMenu.data,
+  };
 });
 
 export const logout = createAsyncThunk("auth/logout", async (userData) => {
-  const res = await api.post("/api/v1/bio/authentication/auth/logout", {
-    appCode: "ASSESSMENT",
-    moduleCode: "ALL",
-    domain: "",
-    user: userData.user,
-  });
+  const authData = localStorage.getItem("auth_data");
+  const { token } = JSON.parse(authData);
+  const res = await axios.post(
+    `/api/auth/logout`,
+    {
+      appCode: "ASSESSMENT",
+      moduleCode: "ALL",
+      domain: "",
+      user: userData.user,
+    },
+    {
+      headers: {
+        Authorization: `${token.type} ${token.access}`,
+        app_id: process.env.NEXT_PUBLIC_APP_ID,
+        app_key: process.env.NEXT_PUBLIC_APP_KEY,
+      },
+    }
+  );
   return res.data.data;
 });
 
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    accessToken: null,
-    refreshToken: null,
-    userData: null,
+    authData: null,
     loading: false,
     loadingMenu: false,
     menu: [],
+    flatMenu: [],
   },
   reducers: {
     setAuthData(state, action) {
-      state.accessToken = action.payload.token;
-      state.refreshToken = action.payload.refresh_token;
-      state.userData = action.payload.user_data;
+      state.authData = action.payload;
     },
     setMenu(state, action) {
-      state.menu = action.payload;
+      state.menu = action.payload.nestedMenu;
+      state.flatMenu = action.payload.flatMenu;
     },
     clearAuthData(state) {
-      state.accessToken = null;
-      state.refreshToken = null;
-      state.userData = null;
+      state.authData = null;
       state.menu = [];
-
+      state.flatMenu = [];
+      // Cookies.remove("RefreshToken", { path: "/" });
       if (typeof window !== "undefined") {
-        sessionStorage.removeItem("access_token");
-        sessionStorage.removeItem("refresh_token");
-        sessionStorage.removeItem("user_data");
-        sessionStorage.removeItem("menu");
+        localStorage.removeItem("auth_data");
+        localStorage.removeItem("menu");
+        localStorage.removeItem("flat_menu");
       }
     },
     setLoading(state, action) {
@@ -75,9 +112,7 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.accessToken = action.payload.token;
-        state.refreshToken = action.payload.refresh_token;
-        state.userData = action.payload.user;
+        state.authData = action.payload;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -88,7 +123,8 @@ const authSlice = createSlice({
       })
       .addCase(fetchMenu.fulfilled, (state, action) => {
         state.loadingMenu = false;
-        state.menu = action.payload;
+        state.menu = action.payload.nestedMenu;
+        state.flatMenu = action.payload.flatMenu;
       })
       .addCase(fetchMenu.rejected, (state, action) => {
         state.loadingMenu = false;
@@ -101,6 +137,16 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state, action) => {
         state.loading = false;
         state.loadingMenu = false;
+        // state.authData = null;
+        // state.menu = [];
+        // state.flatMenu = [];
+        // Cookies.remove("RefreshToken", { path: "/" });
+
+        if (typeof window !== "undefined") {
+          // localStorage.removeItem("auth_data");
+          // localStorage.removeItem("menu");
+          // localStorage.removeItem("flat_menu");
+        }
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading = false;

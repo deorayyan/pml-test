@@ -113,7 +113,7 @@ export function DataTablePagination({
                   <PaginationPrevious
                     onClick={() => {
                       if (onPageChange) {
-                        onPageChange(table.getState().pagination.pageIndex - 1);
+                        onPageChange(`${table.getState().pagination.pageIndex - 1}`);
                       }
                       table.previousPage();
                     }}
@@ -137,7 +137,7 @@ export function DataTablePagination({
                         }
                         onClick={() => {
                           if (onPageChange) {
-                            onPageChange(page - 1);
+                            onPageChange(`${page - 1}`);
                           }
                           table.setPageIndex(page - 1);
                         }}
@@ -154,7 +154,7 @@ export function DataTablePagination({
                   <PaginationNext
                     onClick={() => {
                       if (onPageChange) {
-                        onPageChange(table.getState().pagination.pageIndex + 1);
+                        onPageChange(`${table.getState().pagination.pageIndex + 1}`);
                       }
                       table.nextPage();
                     }}

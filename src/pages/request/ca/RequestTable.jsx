@@ -2,15 +2,17 @@ import { DataTable } from "@/components/DataTable";
 import { DataTableColumnHeader } from "@/components/DataTableColumnHeader";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { Check, MoreHorizontal, X } from "lucide-react";
+import { format } from "date-fns";
+import { MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/DropdownMenu";
 import { useDialog } from "@/context/DialogContext";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteMasterTracker } from "@/redux/slices/masterTrackerSlice";
+import { deleteRequest } from "@/redux/slices/requestSlice";
 import { useToast } from "@/hooks/useToast";
+import { formatNumber } from "@/utils/utils";
 import RowNumber from "@/components/RowNumber";
 
-const MasterTrackerTable = ({
+const RequestTable = ({
   data,
   loading,
   onSearchChange,
@@ -56,7 +58,7 @@ const MasterTrackerTable = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[160px]">
               <DropdownMenuItem asChild>
-                <Link href={`/tracker/ca/edit/${row.original.id}`}>Edit</Link>
+                <Link href={`/request/ca/edit/${row.original.id}`}>Edit</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => {
@@ -66,7 +68,7 @@ const MasterTrackerTable = ({
                     "Are you sure you want to delete this item? This action cannot be undone.",
                   variant: "danger",
                   onConfirm: async () => {
-                    await dispatch(deleteMasterTracker({
+                    await dispatch(deleteRequest({
                       id: row?.original.id,
                       deletedBy: authData.user
                     }));
@@ -85,104 +87,97 @@ const MasterTrackerTable = ({
       ),
     },
     {
-      accessorKey: "code",
-      meta: { label: "Code", nowrap: false },
+      accessorKey: "projectCode",
+      meta: { label: "Project Code", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Code" />
+        <DataTableColumnHeader column={column} title="Project Code" />
       ),
       cell: ({ row }) => {
         return (
           <Button variant="link" asChild>
-            <Link href={`/master/tracker/${row.original?.id}`}>
-              {row.getValue("code")}
+            <Link href={`/request/ca/${row.original?.id}`}>
+              {row.getValue("projectCode")}
             </Link>
           </Button>
         );
       },
     },
     {
-      accessorKey: "parentCode",
-      meta: { label: "Parent Code", nowrap: false },
+      accessorKey: "partnerId",
+      meta: { label: "Partner ID", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Parent Code" />
+        <DataTableColumnHeader column={column} title="Partner ID" />
       ),
     },
     {
-      accessorKey: "description",
-      meta: { label: "Description", nowrap: false },
+      accessorKey: "receivingStatus",
+      meta: { label: "Receiving Status", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Description" />
+        <DataTableColumnHeader column={column} title="Receiving Status" />
       ),
     },
     {
-      accessorKey: "order",
-      meta: { label: "Order", nowrap: false },
+      accessorKey: "lastStatus",
+      meta: { label: "Last Status", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Order" />
+        <DataTableColumnHeader column={column} title="Last Status" />
       ),
     },
     {
-      accessorKey: "actionType",
-      meta: { label: "Action Type", nowrap: false },
+      accessorKey: "leadTime",
+      meta: { label: "Lead Time", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Action Type" />
+        <DataTableColumnHeader column={column} title="Lead Time" />
       ),
+      cell: ({ row }) => formatNumber(row.original?.leadTime),
     },
     {
-      accessorKey: "moduleFlow",
-      meta: { label: "Module Flow", nowrap: false },
+      accessorKey: "totalFee",
+      meta: { label: "Total Fee", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Module Flow" />
+        <DataTableColumnHeader column={column} title="Total Fee" />
       ),
+      cell: ({ row }) => formatNumber(row.original?.totalFee),
     },
     {
-      accessorKey: "mandays",
-      meta: { label: "Mandays", nowrap: false },
+      accessorKey: "requestDate",
+      meta: { label: "Request Date", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Mandays" />
+        <DataTableColumnHeader column={column} title="Request Date" />
       ),
+      cell: ({ row }) => format(new Date(row.original?.requestDate ?? ""), "dd MMM yyyy HH:mm"),
     },
     {
-      accessorKey: "isParallel",
-      meta: { label: "Parallel", nowrap: false },
+      accessorKey: "receivedDate",
+      meta: { label: "Received Date", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Parallel" />
+        <DataTableColumnHeader column={column} title="Received Date" />
       ),
-      cell: ({ row }) => {
-        return (
-          <div className={`flex justify-center ${row.getValue("isParallel") ? "text-success" : "text-danger"}`}>
-            { row.getValue("isParallel") ? <Check size={16} /> : <X size={16} /> }
-          </div>
-        );
-      },
+      cell: ({ row }) => format(new Date(row.original?.receivedDate ?? ""), "dd MMM yyyy HH:mm"),
     },
     {
-      accessorKey: "isPublic",
-      meta: { label: "Public", nowrap: false },
+      accessorKey: "dueDate",
+      meta: { label: "Due Date", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Public" />
+        <DataTableColumnHeader column={column} title="Due Date" />
       ),
-      cell: ({ row }) => {
-        return (
-          <div className={`flex justify-center ${row.getValue("isPublic") ? "text-success" : "text-danger"}`}>
-            { row.getValue("isPublic") ? <Check size={16} /> : <X size={16} /> }
-          </div>
-        );
-      },
+      cell: ({ row }) => format(new Date(row.original?.dueDate ?? ""), "dd MMM yyyy HH:mm"),
     },
     {
-      accessorKey: "isUsingNotification",
-      meta: { label: "Notification", nowrap: false },
+      accessorKey: "analysisWipDate",
+      meta: { label: "Analysis WIP Date", nowrap: true },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Notification" />
+        <DataTableColumnHeader column={column} title="Analysis WIP Date" />
       ),
-      cell: ({ row }) => {
-        return (
-          <div className={`flex justify-center ${row.getValue("isUsingNotification") ? "text-success" : "text-danger"}`}>
-            { row.getValue("isUsingNotification") ? <Check size={16} /> : <X size={16} /> }
-          </div>
-        );
-      },
+      cell: ({ row }) => format(new Date(row.original?.analysisWipDate ?? ""), "dd MMM yyyy HH:mm"),
+    },
+    {
+      accessorKey: "analysisCompletedDate",
+      meta: { label: "Analysis CompletedDate", nowrap: true },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Analysis CompletedDate" />
+      ),
+      cell: ({ row }) => format(new Date(row.original?.analysisCompletedDate ?? ""), "dd MMM yyyy HH:mm"),
     },
   ];
 
@@ -220,4 +215,4 @@ const MasterTrackerTable = ({
     />
   )
 };
-export default MasterTrackerTable;
+export default RequestTable;

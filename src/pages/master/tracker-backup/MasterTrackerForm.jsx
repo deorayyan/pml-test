@@ -3,78 +3,75 @@ import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { ChevronLeft, Save, SendHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
+// import { useDialog } from "@/app/context/DialogContext";
 import { Separator } from "@/components/ui/Separator";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch, useSelector } from "react-redux";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/Form";
+import { Label } from "@/components/ui/Label";
+import { Switch } from "@/components/ui/Switch";
 import Combobox from "@/components/Combobox";
-import { addRequest, updateRequest } from "@/redux/slices/requestSlice";
+import { Textarea } from "@/components/ui/Textarea";
+import { addTracker, fetchAllTrackers, updateTracker } from "@/redux/slices/masterTrackerSlice";
 import { useToast } from "@/hooks/useToast";
-import DatePicker from "@/components/Datepicker";
-import { formatISO } from "date-fns";
 
 const formSchema = z.object({
-  partnerId: z.string().min(1, {message: "Please select Partner"}),
-  projectCode: z.string().min(1, {message: "Project Code is required"}),
-  totalFee: z.number(),
-  lastStatus: z.string(),
-  receivingStatus: z.string(),
-  leadTime: z.number(),
-  receivedDate: z.date(),
-  analysisWipDate: z.date(),
-  analysisCompletedDate: z.date()
+  actionType: z.string().min(1, {message: "Please select Action Type"}),
+  code: z.string().min(1, {message: "Code is required"}),
+  description: z.string().min(1, {message: "Description is required"}),
+  isParallel: z.boolean(),
+  isPublic: z.boolean(),
+  isUsingNotification: z.boolean(),
+  mandays: z.number({ invalid_type_error: "Mandays is required" }),
+  moduleFlow: z.string().min(1, {message: "Please select Module Flow"}),
+  order: z.number().min(0, {message: "Order is required"}),
+  parentCode: z.string(),
 });
 
-const RequestForm = ({
+const MasterTrackerForm = ({
   initialValue,
   head,
   readOnly,
 }) => {
-  console.log("initialValue", initialValue);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: initialValue,
     mode: "onSubmit"
   });
 
-  const { loading, submitting } = useSelector((state) => state.request);
+  const { loading, submitting, list } = useSelector((state) => state.tracker);
 
   const dispatch = useDispatch();
   const router = useRouter();
   const { toast } = useToast();
 
+  useEffect(() => {
+    dispatch(fetchAllTrackers());
+  }, []);
+
   const onSubmit = async (values) => {
-    console.log("values", values);
     try {
       if (initialValue?.id) {
-        await dispatch(updateRequest({
+        await dispatch(updateTracker({
           id: initialValue?.id,
-          ...values,
-          analysisCompletedDate: formatISO(values.analysisCompletedDate),
-          analysisWipDate: formatISO(values.analysisWipDate),
-          receivedDate: formatISO(values.receivedDate),
+          ...values
         }));
         toast({
           title: "Saved",
           description: "Data has been updated."
         })
       } else {
-        await dispatch(addRequest({
-          ...values,
-          analysisCompletedDate: formatISO(values.analysisCompletedDate),
-          analysisWipDate: formatISO(values.analysisWipDate),
-          receivedDate: formatISO(values.receivedDate),
-        }));
+        await dispatch(addTracker(values));
         toast({
           title: "Submitted",
           description: "Data has been submitted."
         })
       }
 
-      router.push("/request/babe");
+      router.push("/master/tracker");
     } catch (err) {
       console.log("err", err);
       toast({
@@ -100,7 +97,7 @@ const RequestForm = ({
               <Button
                 variant="outline"
                 className="pr-5 pl-3"
-                onClick={() => router.push("/request/babe")}
+                onClick={() => router.push("/master/tracker")}
                 type="button"
               >
                 <ChevronLeft />
@@ -133,20 +130,32 @@ const RequestForm = ({
               <div className="grid grid-cols-2 gap-3 items-center content-center">
                 <FormField
                   control={form.control}
-                  name="partnerId"
+                  name="actionType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Partner</FormLabel>
+                      <FormLabel>Action Type</FormLabel>
                       <FormControl>
                         <Combobox
                           onValueChange={(val) => {
-                            form.setValue("partnerId", val)
+                            form.setValue("actionType", val)
                           }}
                           defaultValue={field.value}
                           options={[
                             {
-                              label: "Partner A",
-                              value: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                              label: "None",
+                              value: "none"
+                            },
+                            {
+                              label: "Text",
+                              value: "text"
+                            },
+                            {
+                              label: "File",
+                              value: "file"
+                            },
+                            {
+                              label: "Date",
+                              value: "date"
                             }
                           ]}
                         />
@@ -157,49 +166,13 @@ const RequestForm = ({
                 />
                 <FormField
                   control={form.control}
-                  name="projectCode"
+                  name="code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Project Code</FormLabel>
+                      <FormLabel>Code</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Project Code"
-                          disabled={loading}
-                          bounceTime={0}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="receivingStatus"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Receiving Status</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Receiving Status"
-                          disabled={loading}
-                          bounceTime={0}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastStatus"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Status</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Last Status"
+                          placeholder="Code"
                           disabled={loading}
                           bounceTime={0}
                           {...field}
@@ -210,84 +183,93 @@ const RequestForm = ({
                   )}
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Description"
+                        disabled={loading}
+                        bounceTime={0}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex gap-6">
                 <FormField
                   control={form.control}
-                  name="receivedDate"
+                  name="isParallel"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Request Date</FormLabel>
-                      <FormControl>
-                        <DatePicker
-                          onDateChange={(val) => {
-                            form.setValue("receivedDate", val);
-                          }}
-                          value={field.value}
-                          placeholder="Select Date"
-                          disabled={submitting}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isParallel"
+                        checked={field.value ?? false}
+                        onCheckedChange={(checked) => {
+                          form.setValue("isParallel", checked);
+                        }}
+                        disabled={loading}
+                      />
+                      <Label htmlFor="isParallel">Parallel</Label>
+                    </div>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="analysisWipDate"
+                  name="isPublic"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Analysis Wip Date</FormLabel>
-                      <FormControl>
-                        <DatePicker
-                          value={field.value}
-                          onDateChange={(val) => {
-                            form.setValue("analysisWipDate", val);
-                          }}
-                          placeholder="Select Date"
-                          disabled={submitting}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isPublic"
+                        checked={field.value ?? false}
+                        onCheckedChange={(checked) => {
+                          form.setValue("isPublic", checked);
+                        }}
+                        disabled={loading}
+                      />
+                      <Label htmlFor="isPublic">Public</Label>
+                    </div>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="analysisCompletedDate"
+                  name="isUsingNotification"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Analysis Completed Date</FormLabel>
-                      <FormControl>
-                        <DatePicker
-                          value={field.value}
-                          onDateChange={(val) => {
-                            form.setValue("analysisCompletedDate", val);
-                          }}
-                          placeholder="Select Date"
-                          disabled={submitting}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isUsingNotification"
+                        checked={field.value ?? false}
+                        onCheckedChange={(checked) => {
+                          form.setValue("isUsingNotification", checked);
+                        }}
+                        disabled={loading}
+                      />
+                      <Label htmlFor="isUsingNotification">Notification</Label>
+                    </div>
                   )}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="leadTime"
+                  name="mandays"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lead Time</FormLabel>
+                      <FormLabel>Mandays</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Lead Time"
+                          placeholder="Mandays"
                           disabled={loading}
                           bounceTime={0}
                           {...field}
                           onChange={(e) => {
-                            form.setValue("leadTime", e.target.rawValue)
+                            form.setValue("mandays", e.target.rawValue)
                           }}
                         />
                       </FormControl>
@@ -297,20 +279,70 @@ const RequestForm = ({
                 />
                 <FormField
                   control={form.control}
-                  name="totalFee"
+                  name="moduleFlow"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Total Fee</FormLabel>
+                      <FormLabel>Module Flow</FormLabel>
+                      <FormControl>
+                        <Combobox
+                          onValueChange={(val) => {
+                            form.setValue("moduleFlow", val)
+                          }}
+                          defaultValue={field.value}
+                          options={[
+                            {
+                              label: "CA",
+                              value: "CA"
+                            },
+                          ]}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:max-w-24">
+                <FormField
+                  control={form.control}
+                  name="order"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Order</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Total Fee"
+                          placeholder="Order"
                           disabled={loading}
                           bounceTime={0}
                           {...field}
                           onChange={(e) => {
-                            form.setValue("totalFee", e.target.rawValue)
+                            form.setValue("order", e.target.rawValue)
                           }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div>
+                <FormField
+                  control={form.control}
+                  name="parentCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Parent</FormLabel>
+                      <FormControl>
+                        <Combobox
+                          onValueChange={(val) => {
+                            form.setValue("parentCode", val)
+                          }}
+                          defaultValue={field.value}
+                          options={list.map((item) => ({
+                            label: item.code,
+                            value: item.code,
+                          }))}
                         />
                       </FormControl>
                       <FormMessage />
@@ -326,4 +358,4 @@ const RequestForm = ({
   );
 };
 
-export default RequestForm;
+export default MasterTrackerForm;

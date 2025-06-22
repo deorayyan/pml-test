@@ -15,48 +15,24 @@ import {
 } from "@/components/ui/Collapsible";
 import React from "react";
 import Icon from "@/components/Icon";
-
-const trimPath = (pathname) => {
-  const segments = pathname?.split("/").filter(Boolean); // Split and remove empty parts
-
-  if (
-    segments?.length > 0 &&
-    (segments[segments.length - 1] === "add" ||
-      segments[segments.length - 1] === "detail")
-  ) {
-    segments?.pop(); // Remove the last segment if it's "add"
-  }
-
-  return "/" + segments?.join("/"); // Reconstruct the path
-};
+import { trimPath } from "@/utils/menu";
 
 export const NestedMenuItem = React.memo(
   ({
     item,
-    parents,
-    parentId,
-    openIndexes,
+    activeItem,
     onOpenChange,
+    openIndexes
   }) => {
     const pathname = usePathname();
 
     const isActive = trimPath(pathname) === item.moduleUrl;
-    const matchPaths = item?.moduleUrl
-      ?.split("/")
-      .reduce(
-        (count, pathName) =>
-          pathname?.split("/").includes(pathName) ? count + 1 : count,
-        0
-      );
-    const isParentOfCurrentPath = matchPaths === item.moduleUrl.split("/").length;
 
     const handleOpenChange = (open) => {
-      onOpenChange(parentId, item?.moduleCode ?? 0, open);
+      onOpenChange(item?.parentModuleCode, item?.moduleCode, open);
     };
 
-    const isOpened =
-      openIndexes[`${parentId}`] === `${item.moduleCode}` || isParentOfCurrentPath;
-
+    const isOpened = openIndexes[`${item?.parentModuleCode}`] === `${item.moduleCode}` || item.moduleCode === activeItem?.parentModuleCode;
     if (item.children?.length) {
       return (
         <Collapsible
@@ -73,8 +49,7 @@ export const NestedMenuItem = React.memo(
                 {item.icon && typeof item.icon !== "string" && <item.icon />}
                 <span>{item.moduleName}</span>
                 <ChevronDown
-                  className={`ml-auto transition-transform ${isOpened && "rotate-180"
-                    }`}
+                  className={`ml-auto transition-transform ${isOpened && "rotate-180"}`}
                 />
               </SidebarMenuButton>
             </CollapsibleTrigger>
@@ -82,11 +57,11 @@ export const NestedMenuItem = React.memo(
               <SidebarMenuSub>
                 {item.children.map((sub) => (
                   <NestedMenuItem
-                    item={sub}
-                    parentId={item.moduleCode || 0}
                     key={sub.moduleCode}
-                    openIndexes={openIndexes}
+                    item={sub}
+                    activeItem={activeItem}
                     onOpenChange={onOpenChange}
+                    openIndexes={openIndexes}
                   />
                 ))}
               </SidebarMenuSub>
@@ -96,7 +71,7 @@ export const NestedMenuItem = React.memo(
       );
     }
 
-    return parentId === 0 ? (
+    return !item.children.length ? (
       <SidebarMenuItem key={item.moduleName}>
         <SidebarMenuButton asChild tooltip={item.moduleName} isActive={isActive}>
           <Link href={item.moduleUrl}>

@@ -1,64 +1,78 @@
 import api from "@/services/api";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-export const fetchTrackers = createAsyncThunk(
+export const fetchMasterTrackers = createAsyncThunk(
   "trackers/get",
   async ({
     page = 0,
     perPage = 5,
-    sort = "DESC",
-    sortBy = "order",
+    sort = "desc",
+    sortBy = "id",
     search = "",
   }) => {
-    const res = await api.get(`/api/v1/main/trackers/paging`, {
-      headers: {
-        "X-PAGING-OFFSET": page * perPage,
-        "X-PAGING-LIMIT": perPage,
-        "X-PAGING-SORTBY": sortBy,
-        "X-PAGING-SORTORDER": sort,
-        "X-PAGING-SEARCH": search,
-      },
-    });
+    const res = await api.get(
+      `${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers/paging`,
+      {
+        headers: {
+          "X-PAGING-OFFSET": page * perPage,
+          "X-PAGING-LIMIT": perPage,
+          "X-PAGING-SORTBY": sortBy,
+          "X-PAGING-SORTORDER": sort,
+          "X-PAGING-SEARCH": search,
+        },
+      }
+    );
     return res.data.data;
   }
 );
 
-export const fetchAllTrackers = createAsyncThunk("trackers/all", async () => {
-  const res = await api.get(`/api/v1/main/trackers`);
+export const fetchAllMasterTrackers = createAsyncThunk(
+  "trackers/all",
+  async () => {
+    const res = await api.get(`${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`);
+    return res.data.data;
+  }
+);
+
+export const getMasterTracker = createAsyncThunk("tracker/get", async (id) => {
+  const res = await api.get(
+    `${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers/${id}`
+  );
   return res.data.data;
 });
 
-export const getTracker = createAsyncThunk("tracker/get", async (id) => {
-  const res = await api.get(`/api/v1/main/trackers/${id}`);
-  return res.data.data;
-});
-
-export const addTracker = createAsyncThunk(
+export const addMasterTracker = createAsyncThunk(
   "trackers/add",
-  async (newTracker) => {
-    const res = await api.post("/api/v1/main/trackers", newTracker);
+  async (newMasterTracker) => {
+    const res = await api.post(
+      `${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`,
+      newMasterTracker
+    );
     return res.data.data;
   }
 );
 
-export const updateTracker = createAsyncThunk(
+export const updateMasterTracker = createAsyncThunk(
   "trackers/update",
   async (tracker) => {
-    const res = await api.put(`/api/v1/main/trackers`, tracker);
-    return res.data.data;
+    await api.put(`${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`, tracker);
+    return tracker;
   }
 );
 
-export const deleteTracker = createAsyncThunk(
+export const deleteMasterTracker = createAsyncThunk(
   "trackers/delete",
   async ({ id, deletedBy }) => {
-    await api.delete("/api/v1/main/trackers", {
-      data: {
-        id,
-        deletedBy,
-        doHardDelete: false,
-      },
+    // axios.delete("", {
+    //   params: {
+
+    //   }
+    // })
+    const res = await api.put(`${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`, {
+      id,
+      isActive: true,
     });
+    console.log("deleted", res.data);
     return id;
   }
 );
@@ -81,7 +95,7 @@ const trackerSlice = createSlice({
     },
   },
   reducers: {
-    clearTrackerDetail: (state) => {
+    clearMasterTrackerDetail: (state) => {
       state.detail = null;
     },
     setPagination: (state, action) => {
@@ -90,75 +104,74 @@ const trackerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTrackers.pending, (state) => {
+      .addCase(fetchMasterTrackers.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchTrackers.fulfilled, (state, action) => {
-        state.loading = false;
+      .addCase(fetchMasterTrackers.fulfilled, (state, action) => {
         state.data = action.payload;
-      })
-      .addCase(fetchTrackers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
       })
-      .addCase(fetchAllTrackers.pending, (state) => {
+      .addCase(fetchMasterTrackers.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
+      })
+      .addCase(fetchAllMasterTrackers.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchAllTrackers.fulfilled, (state, action) => {
-        state.loading = false;
+      .addCase(fetchAllMasterTrackers.fulfilled, (state, action) => {
         state.list = action.payload;
-      })
-      .addCase(fetchAllTrackers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
       })
-      .addCase(getTracker.pending, (state) => {
+      .addCase(fetchAllMasterTrackers.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
+      })
+      .addCase(getMasterTracker.pending, (state) => {
         state.loading = true;
       })
-      .addCase(getTracker.fulfilled, (state, action) => {
-        state.loading = false;
+      .addCase(getMasterTracker.fulfilled, (state, action) => {
         state.detail = action.payload;
-      })
-      .addCase(getTracker.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
       })
-      .addCase(addTracker.pending, (state) => {
+      .addCase(getMasterTracker.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
+      })
+      .addCase(addMasterTracker.pending, (state) => {
         state.submitting = true;
       })
-      .addCase(addTracker.fulfilled, (state, action) => {
+      .addCase(addMasterTracker.fulfilled, (state, action) => {
         state.submitting = false;
-        state.data.items.push(action.payload);
       })
-      .addCase(addTracker.rejected, (state, action) => {
-        state.submitting = false;
+      .addCase(addMasterTracker.rejected, (state, action) => {
         state.error = action.error.message;
+        state.submitting = false;
       })
-      .addCase(updateTracker.pending, (state) => {
+      .addCase(updateMasterTracker.pending, (state) => {
         state.loading = true;
       })
-      .addCase(updateTracker.fulfilled, (state, action) => {
+      .addCase(updateMasterTracker.fulfilled, (state, action) => {
         state.loading = false;
       })
-      .addCase(updateTracker.rejected, (state, action) => {
-        state.loading = false;
+      .addCase(updateMasterTracker.rejected, (state, action) => {
         state.error = action.error.message;
+        state.loading = false;
       })
-      .addCase(deleteTracker.pending, (state) => {
+      .addCase(deleteMasterTracker.pending, (state) => {
         state.loading = true;
       })
-      .addCase(deleteTracker.fulfilled, (state, action) => {
-        state.loading = false;
+      .addCase(deleteMasterTracker.fulfilled, (state, action) => {
         state.data.items = state.data.items.filter(
           (p) => p.id !== action.payload
         );
+        state.loading = false;
       })
-      .addCase(deleteTracker.rejected, (state, action) => {
+      .addCase(deleteMasterTracker.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
   },
 });
 
-export const { clearTrackerDetail, setPagination } = trackerSlice.actions;
+export const { clearMasterTrackerDetail, setPagination } = trackerSlice.actions;
 export default trackerSlice.reducer;

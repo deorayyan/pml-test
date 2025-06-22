@@ -6,6 +6,7 @@ import AppNavbar from "../AppNavbar";
 import { useSelector } from "react-redux";
 import { Toaster } from "../ui/Toaster";
 import { DialogProvider } from "@/context/DialogContext";
+import Loader from "../Loader";
 
 const MainLayout = ({ children }) => {
   const { loading, loadingMenu } = useSelector((state) => state.auth);
@@ -22,7 +23,7 @@ const MainLayout = ({ children }) => {
     setInitialized(true);
   }, []);
 
-  if (loading || loadingMenu) return <>Loading...</>;
+  if (loading || loadingMenu) return <Loader />;
 
   return (
     initialized && (

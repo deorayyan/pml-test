@@ -1,7 +1,6 @@
 import * as React from "react";
 import { ChevronDown, LoaderCircle } from "lucide-react";
-import { cn } from "@/utils/utils";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -10,12 +9,13 @@ import {
   CommandItem,
   CommandList,
   CommandLoading,
-} from "@/components/ui/Command";
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/Popover";
+} from "@/components/ui/popover";
+import { cn } from "@/utils/utils";
 
 const Combobox = React.forwardRef(
   (

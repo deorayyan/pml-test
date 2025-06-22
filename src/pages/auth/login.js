@@ -1,3 +1,4 @@
+// src/page/auth/login.js
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
@@ -37,8 +38,8 @@ const Login = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
-      password: "",
+      username: "fe.it.pml",
+      password: "Password123?",
       rememberMe: true,
     },
   });
@@ -52,26 +53,31 @@ const Login = () => {
   const onSubmit = async (values) => {
     try {
       const { payload: data } = await dispatch(login(values));
-      const token = data.token.access;
-      const refreshToken = data.token.refresh;
-      const userData = {
-        user: data.user,
-        username: data.username,
-      };
+      const authData = data;
 
-      dispatch(
-        setAuthData({ token, refresh_token: refreshToken, user_data: userData })
+      dispatch(setAuthData(authData));
+
+      const now = Date.now();
+      // authData.token.expiresIn = now + authData.token.expiresIn * 1000;
+      localStorage.setItem(
+        "auth_data",
+        JSON.stringify({
+          ...authData,
+          token: {
+            ...authData.token,
+            expiresIn: now + authData.token.expiresIn * 1000,
+          },
+        })
       );
 
-      sessionStorage.setItem("access_token", token);
-      sessionStorage.setItem("refresh_token", refreshToken);
-      sessionStorage.setItem("user_data", JSON.stringify(userData));
-
       const { payload: menu } = await dispatch(fetchMenu());
-      sessionStorage.setItem("menu", JSON.stringify(menu));
+
+      localStorage.setItem("menu", JSON.stringify(menu.nestedMenu));
+      localStorage.setItem("flat_menu", JSON.stringify(menu.flatMenu));
 
       router.push("/");
     } catch (err) {
+      console.log("err", err);
       setError("Login failed. Please check your credentials.");
     }
   };

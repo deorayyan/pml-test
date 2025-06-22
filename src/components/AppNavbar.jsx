@@ -6,9 +6,9 @@ import { Menu } from "lucide-react";
 
 export default function AppNavbar() {
   const { setOpenMobile } = useSidebar();
-  const { userData, loading, loadingMenu } = useSelector((state) => state.auth);
+  const { authData, loading, loadingMenu } = useSelector((state) => state.auth);
 
-  if (loading || loadingMenu || !userData) return <>Loading...</>;
+  if (loading || loadingMenu || !authData) return <>Loading...</>;
 
   return (
     <div className="w-full shadow-panel py-3 px-3 lg:px-5 rounded-[6px] sticky bg-card top-0 z-20 h-[62px] flex items-center justify-between">
@@ -29,9 +29,9 @@ export default function AppNavbar() {
 
           <div className="flex gap-3 items-center content-center ml-2">
             <div className="grid grid-cols-1 text-right">
-              <p className="mb-0">{userData.user}</p>
+              <p className="mb-0">{authData.user}</p>
               <p className="text-xs mb-0 text-muted-foreground">
-                {userData.username}
+                {authData.username}
               </p>
             </div>
             <UserNav />

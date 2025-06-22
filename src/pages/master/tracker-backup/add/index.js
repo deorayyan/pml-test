@@ -1,5 +1,5 @@
 import MasterTrackerForm from "../MasterTrackerForm";
 
-export default function RequestAddPage() {
+export default function MasterTrackerAddPage() {
   return <MasterTrackerForm />;
 }
