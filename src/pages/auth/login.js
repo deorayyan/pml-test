@@ -77,7 +77,6 @@ const Login = () => {
 
       router.push("/");
     } catch (err) {
-      console.log("err", err);
       setError("Login failed. Please check your credentials.");
     }
   };

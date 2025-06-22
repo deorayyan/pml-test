@@ -65,13 +65,7 @@ export default function RequestPage({ query }) {
 
   useEffect(() => {
     if (!router.isReady || loading) return;
-    console.log("fetch", {
-      search,
-      page,
-      perPage,
-      sort,
-      sortBy: camelToSnake(sortBy),
-    });
+
     dispatch(
       fetchRequests({
         search,
@@ -114,7 +108,6 @@ export default function RequestPage({ query }) {
                 handleSortChange(sort);
               }}
               onPageChange={(page) => {
-                console.log("page changed", page);
                 handlePageChange(page);
               }}
               onPerPageChange={(perPage) => {

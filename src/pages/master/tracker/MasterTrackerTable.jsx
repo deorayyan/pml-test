@@ -56,7 +56,7 @@ const MasterTrackerTable = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[160px]">
               <DropdownMenuItem asChild>
-                <Link href={`/tracker/ca/edit/${row.original.id}`}>Edit</Link>
+                <Link href={`/master/tracker/edit/${row.original.id}`}>Edit</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => {

@@ -53,7 +53,10 @@ export const addRequest = createAsyncThunk(
 export const updateRequest = createAsyncThunk(
   "requests/update",
   async (request) => {
-    await api.put(`${process.env.NEXT_PUBLIC_MAIN_PATH}/requests`, request);
+    await api.put(`${process.env.NEXT_PUBLIC_MAIN_PATH}/requests`, {
+      ...request,
+      isActive: true,
+    });
     return request;
   }
 );
@@ -61,16 +64,13 @@ export const updateRequest = createAsyncThunk(
 export const deleteRequest = createAsyncThunk(
   "requests/delete",
   async ({ id, deletedBy }) => {
-    // axios.delete("", {
-    //   params: {
-
-    //   }
-    // })
-    const res = await api.put(`${process.env.NEXT_PUBLIC_MAIN_PATH}/requests`, {
-      id,
-      isActive: true,
+    await api.delete(`${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`, {
+      data: {
+        id,
+        deletedBy,
+        doHardDelete: true,
+      },
     });
-    console.log("deleted", res.data);
     return id;
   }
 );

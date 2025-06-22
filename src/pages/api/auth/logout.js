@@ -15,7 +15,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log("req", req.headers);
     const backendResponse = await axios.post(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}${process.env.NEXT_PUBLIC_AUTH_PATH}/auth/logout`,
       {

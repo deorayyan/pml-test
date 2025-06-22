@@ -37,7 +37,19 @@ const MasterMasterTrackerForm = ({
 }) => {
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: initialValue,
+    defaultValues: {
+      actionType: "",
+      code: "",
+      description: "",
+      isParallel: false,
+      isPublic: false,
+      isUsingNotification: false,
+      mandays: null,
+      moduleFlow: "",
+      order: null,
+      parentCode: "",
+      ...initialValue,
+    },
     mode: "onSubmit"
   });
 
@@ -72,7 +84,6 @@ const MasterMasterTrackerForm = ({
 
       router.push("/master/tracker");
     } catch (err) {
-      console.log("err", err);
       toast({
         variant: "danger",
         title: "Error",
@@ -111,9 +122,6 @@ const MasterMasterTrackerForm = ({
                     type="submit"
                     loading={submitting}
                     loadingText="Submitting"
-                    onClick={() => {
-                      console.log("form", form);
-                    }}
                   >
                     {!initialValue?.id ? <SendHorizontal /> : <Save />}
                     {!initialValue?.id ? "Submit" : "Save"}

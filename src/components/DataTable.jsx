@@ -107,12 +107,6 @@ export function DataTable({
   });
 
   React.useEffect(() => {
-    console.log("sorting changed", sorting, [
-      {
-        id: sortBy,
-        desc: sort === "desc"
-      }
-    ]);
     if (sorting.length > 0) {
       if (onSortChange) {
         onSortChange(sorting);

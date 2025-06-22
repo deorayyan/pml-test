@@ -37,7 +37,20 @@ const RequestForm = ({
 }) => {
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: initialValue,
+    defaultValues: {
+      partnerId: "",
+      projectCode: "",
+      totalFee: "",
+      lastStatus: "",
+      receivingStatus: "",
+      leadTime: "",
+      receivedDate: "",
+      analysisWipDate: "",
+      analysisCompletedDate: "",
+      dueDate: "",
+      requestDate: "",
+      ...initialValue
+    },
     mode: "onSubmit"
   });
 
@@ -48,7 +61,6 @@ const RequestForm = ({
   const { toast } = useToast();
 
   const onSubmit = async (values) => {
-    console.log("values", values);
     try {
       if (initialValue?.id) {
         await dispatch(updateRequest({
@@ -59,8 +71,6 @@ const RequestForm = ({
           analysisCompletedDate: formatISO(values.analysisCompletedDate),
           dueDate: formatISO(values.dueDate),
           requestDate: formatISO(values.requestDate),
-          isActive: true,
-          isactive: true
         }));
         toast({
           title: "Saved",
@@ -74,8 +84,6 @@ const RequestForm = ({
           analysisCompletedDate: formatISO(values.analysisCompletedDate),
           dueDate: formatISO(values.dueDate),
           requestDate: formatISO(values.requestDate),
-          isActive: true,
-          isactive: true
         }));
         toast({
           title: "Submitted",
@@ -85,7 +93,6 @@ const RequestForm = ({
 
       router.push("/request/ca");
     } catch (err) {
-      console.log("err", err);
       toast({
         variant: "danger",
         title: "Error",
@@ -124,9 +131,6 @@ const RequestForm = ({
                     type="submit"
                     loading={submitting}
                     loadingText="Submitting"
-                    onClick={() => {
-                      console.log("form", form);
-                    }}
                   >
                     {!initialValue?.id ? <SendHorizontal /> : <Save />}
                     {!initialValue?.id ? "Submit" : "Save"}

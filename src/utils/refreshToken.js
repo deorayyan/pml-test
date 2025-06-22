@@ -31,7 +31,6 @@ export const refreshAccessToken = async () => {
     const refreshEvery =
       originalExpiresIn -
       Number(process.env.NEXT_PUBLIC_TOKEN_REFRESH_EVERY ?? 60); // in seconds
-    console.log("scheduleTokenRefresh call from refreshToken.js");
     scheduleTokenRefresh(refreshAccessToken, refreshEvery);
 
     return data;

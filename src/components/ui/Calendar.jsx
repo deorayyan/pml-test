@@ -364,8 +364,6 @@ function MonthSelector({
   setNavView,
   goToMonth,
 }) {
-  // const { months,  } = useDayPicker();
-  // console.log("months", months);
   const months = [
     "Jan",
     "Feb",

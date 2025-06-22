@@ -23,11 +23,9 @@ export const login = createAsyncThunk(
       const refreshEvery =
         originalExpiresIn -
         Number(process.env.NEXT_PUBLIC_TOKEN_REFRESH_EVERY ?? 60); // in seconds
-      console.log("scheduleTokenRefresh call from authSlice.js");
       scheduleTokenRefresh(refreshAccessToken, refreshEvery);
       return res.data.data;
     } catch (err) {
-      console.log("ERRRR", err);
       return err;
     }
   }

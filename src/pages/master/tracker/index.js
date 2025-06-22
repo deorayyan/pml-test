@@ -64,15 +64,8 @@ export default function MasterTrackerPage({ query }) {
   };
 
   useEffect(() => {
-    console.log("should fetch");
     if (!router.isReady || loading) return;
-    console.log("fetch", {
-      search,
-      page,
-      perPage,
-      sort,
-      sortBy: camelToSnake(sortBy),
-    });
+
     dispatch(
       fetchMasterTrackers({
         search,
@@ -115,7 +108,6 @@ export default function MasterTrackerPage({ query }) {
                 handleSortChange(sort);
               }}
               onPageChange={(page) => {
-                console.log("page changed", page);
                 handlePageChange(page);
               }}
               onPerPageChange={(perPage) => {

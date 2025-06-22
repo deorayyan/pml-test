@@ -55,7 +55,10 @@ export const addMasterTracker = createAsyncThunk(
 export const updateMasterTracker = createAsyncThunk(
   "trackers/update",
   async (tracker) => {
-    await api.put(`${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`, tracker);
+    await api.put(`${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`, {
+      ...tracker,
+      isActive: true,
+    });
     return tracker;
   }
 );
@@ -63,16 +66,13 @@ export const updateMasterTracker = createAsyncThunk(
 export const deleteMasterTracker = createAsyncThunk(
   "trackers/delete",
   async ({ id, deletedBy }) => {
-    // axios.delete("", {
-    //   params: {
-
-    //   }
-    // })
-    const res = await api.put(`${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`, {
-      id,
-      isActive: true,
+    await api.delete(`${process.env.NEXT_PUBLIC_MAIN_PATH}/trackers`, {
+      data: {
+        id,
+        deletedBy,
+        doHardDelete: true,
+      },
     });
-    console.log("deleted", res.data);
     return id;
   }
 );
